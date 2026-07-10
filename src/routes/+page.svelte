@@ -1,2 +1,20 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import { invalidateAll } from '$app/navigation';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
+
+	$effect(() => {
+		const es = new EventSource('/events');
+		es.onmessage = () => invalidateAll();
+		return () => es.close();
+	});
+</script>
+
+{#each data.inbox as m}
+	<a href="/message/{m.id}" class:unread={!m.seen}>
+		{m.fromName ?? m.fromAddr}
+		{m.subject}
+		<div>{m.snippet}</div>
+	</a>
+{/each}
